@@ -1,72 +1,141 @@
 package socialmedia.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class DirectedGraph {
 
-    // Save del inbdice del user por el nombre
-    private Map<String, Integer> userIndex;
-    
-    private List<String> users;
-    // List adyacencia a cada user que otros sigue
-    private List<List<Integer>> adjacency;
+    // Arreglo de nombres de usuario
+    private String[] users;
+    private int userCount;
+
+    // Lista de adyacencia con arreglos dinámicos
+    private int[][] adj;      // adj[v] = arreglo de vecinos de v
+    private int[] adjCount;   // cuántos vecinos tiene cada v
 
     public DirectedGraph() {
-        userIndex = new HashMap<String, Integer>();
-        users = new ArrayList<String>();
-        adjacency = new ArrayList<List<Integer>>();
+        users = new String[8];     // capacidad inicial
+        userCount = 0;
+        adj = new int[8][];        // filas se crean al agregar usuario
+        adjCount = new int[8];
     }
 
-    // agg usuario
+    // Busca el índice de un usuario por nombre (O(n))
+    private int indexOfUser(String name) {
+        for (int i = 0; i < userCount; i++) {
+            if (users[i].equals(name)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    // Asegura capacidad para agregar un usuario más (dobla tamaño)
+    private void ensureUsersCapacity() {
+        if (userCount < users.length) return;
+
+        int newCap = users.length * 2;
+        // users
+        String[] newUsers = new String[newCap];
+        for (int i = 0; i < userCount; i++) newUsers[i] = users[i];
+        users = newUsers;
+
+        // adj (copiar referencias de filas existentes)
+        int[][] newAdj = new int[newCap][];
+        for (int i = 0; i < userCount; i++) newAdj[i] = adj[i];
+        adj = newAdj;
+
+        // adjCount
+        int[] newAdjCount = new int[newCap];
+        for (int i = 0; i < userCount; i++) newAdjCount[i] = adjCount[i];
+        adjCount = newAdjCount;
+    }
+
+    // Crea una fila de adyacencia con capacidad inicial
+    private void initAdjRow(int v) {
+        adj[v] = new int[4];  // capacidad inicial de 4 vecinos
+        adjCount[v] = 0;
+    }
+
+    // Asegura capacidad para agregar un vecino más a v (dobla tamaño)
+    private void ensureAdjCapacity(int v) {
+        if (adj[v] == null) {
+            initAdjRow(v);
+            return;
+        }
+        if (adjCount[v] < adj[v].length) return;
+
+        int newCap = adj[v].length * 2;
+        int[] newRow = new int[newCap];
+        for (int i = 0; i < adjCount[v]; i++) newRow[i] = adj[v][i];
+        adj[v] = newRow;
+    }
+
+    // Agrega un usuario si no existe (crece dinámicamente)
     public void addUser(String name) {
-        if (userIndex.containsKey(name)) {
-            return; 
-        }
+        if (indexOfUser(name) != -1) return; // ya existe
 
-        int index = users.size(); 
-        users.add(name);  
-        userIndex.put(name, index); // save del nombre e indice
-        adjacency.add(new ArrayList<Integer>());
+        ensureUsersCapacity();
+        users[userCount] = name;
+        initAdjRow(userCount);
+        userCount = userCount + 1;
     }
 
-    // Agg una relacion (seguimiento) entre dos usuarios
+    // Agrega una arista dirigida from -> to (evita duplicados)
     public void addRelation(String from, String to) {
-        Integer fromIndex = userIndex.get(from);
-        Integer toIndex = userIndex.get(to);
+        int iFrom = indexOfUser(from);
+        int iTo   = indexOfUser(to);
 
-        if (fromIndex == null || toIndex == null) {
-            return; 
+        if (iFrom == -1 || iTo == -1) {
+            System.out.println("Cannot add relation: user not found.");
+            return;
         }
 
-        List<Integer> neighbors = adjacency.get(fromIndex);
-        if (!neighbors.contains(toIndex)) {
-            neighbors.add(toIndex); // Agg user al destino como vecino
+        // evitar duplicado
+        for (int i = 0; i < adjCount[iFrom]; i++) {
+            if (adj[iFrom][i] == iTo) return;
         }
+
+        ensureAdjCapacity(iFrom);
+        adj[iFrom][adjCount[iFrom]] = iTo;
+        adjCount[iFrom] = adjCount[iFrom] + 1;
     }
 
-    // Otros métodos como obtener el número de vértices, vecinos, etc.
+    // -------- getters básicos para usar en otras clases --------
+
     public int getVertexCount() {
-        return users.size();
+        return userCount;
     }
 
     public String getUserByIndex(int index) {
-        return users.get(index);
+        return users[index];
     }
 
-    public List<Integer> getNeighbors(int index) {
-        return adjacency.get(index);
+    // Devuelve una COPIA recortada de los vecinos de v
+    public int[] getNeighbors(int v) {
+        int n = adjCount[v];
+        int[] out = new int[n];
+        for (int i = 0; i < n; i++) out[i] = adj[v][i];
+        return out;
+    }
+
+    // Devuelve el buffer interno (ÚSALO CON CUIDADO)
+    public int[] getNeighborsBuffer(int v) {
+        return adj[v];
+    }
+
+    public int getNeighborsCount(int v) {
+        return adjCount[v];
     }
 
     @Override
     public String toString() {
-        String result = "";
-        for (int i = 0; i < users.size(); i++) {
-            result += i + " [" + users.get(i) + "] -> " + adjacency.get(i) + "\n";
+        String s = "";
+        for (int v = 0; v < userCount; v++) {
+            s = s + v + " [" + users[v] + "] -> [";
+            for (int i = 0; i < adjCount[v]; i++) {
+                s = s + adj[v][i];
+                if (i + 1 < adjCount[v]) s = s + ", ";
+            }
+            s = s + "]\n";
         }
-        return result;
+        return s;
     }
 }
-
