@@ -4,10 +4,23 @@ import socialmedia.model.DirectedGraph;
 import java.io.*;
 
 /**
- * load y save a grafos desde txt
+ * Clase pa cargar y guardar los grafos de la social network desde archivos txt
+ * Lee y escribe archivos con formato especifico: seccion de usuarios y relaciones
+ * 
+ * @author Diego
+ * @version 1.0
  */
 public class FileSocialMedia {
 
+    /**
+     * Carga un grafo desde un file de texto
+     * El file debe tener partes: "usuarios" y "relaciones"
+     * Si no encuentra el file, tira exception
+     * 
+     * @param f el file a cargar
+     * @return el grafo con todos los users y sus connections
+     * @throws IOException si hay error leyendo el file o formato wrong
+     */
     public static DirectedGraph loadFromFile(File f) throws IOException {
         DirectedGraph g = new DirectedGraph();
         BufferedReader br = null;
@@ -42,6 +55,14 @@ public class FileSocialMedia {
         return g;
     }
 
+    /**
+     * Guarda el grafo en un file de texto con el formato correcto
+     * Primero escribe todos los users, luego las relaciones
+     * 
+     * @param g el grafo a guardar
+     * @param f el file destino donde guardar
+     * @throws IOException si hay error escribiendo el file
+     */
     public static void saveToFile(DirectedGraph g, File f) throws IOException {
         BufferedWriter bw = null;
         try {
@@ -67,4 +88,3 @@ public class FileSocialMedia {
         }
     }
 }
-

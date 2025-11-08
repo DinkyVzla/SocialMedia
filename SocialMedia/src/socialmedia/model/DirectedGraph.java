@@ -1,15 +1,27 @@
 package socialmedia.model;
 
+/**
+ * Grafo dirigido pa representar una red social
+ * Usa listas de adyacencia pa guardar los users y sus conexiones
+ * Cada user es un nodo y las relaciones son las flechas entre ellos
+ * 
+ * @author Diego 
+ * @version 1.0
+ */
 public class DirectedGraph {
 
-    // name de users
+    // array de usuarios
     private String[] users;
     private int userCount;
 
-    // Adyacencia: vecinos por vértice y cantidad
+    // pa la adyacencia - guarda los vecinos de cada user
     private int[][] adj;
     private int[] adjCount;
 
+    /**
+     * Constructor del grafo - inicializa todo con capacidad pa 8 users
+     * Si se llena, se hace mas grande automaticamente
+     */
     public DirectedGraph() {
         users = new String[8];
         userCount = 0;
@@ -17,7 +29,12 @@ public class DirectedGraph {
         adjCount = new int[8];
     }
 
-    // id del user
+    /**
+     * Busca un user por su nombre y devuelve su indice
+     * 
+     * @param name el nombre del user a buscar
+     * @return el indice del user o -1 si no existe
+     */
     private int indexOfUser(String name) {
         for (int i = 0; i < userCount; i++) {
             if (users[i].equals(name)) return i;
@@ -25,7 +42,10 @@ public class DirectedGraph {
         return -1;
     }
 
-    // ++ la capacidad para mas users
+    /**
+     * Hace el array de users mas grande si esta lleno
+     * Duplica el tamaño cuando es necesario
+     */
     private void ensureUsersCapacity() {
         if (userCount < users.length) return;
 
@@ -44,13 +64,21 @@ public class DirectedGraph {
         adjCount = newAdjCount;
     }
 
-    // Crea fila de adyacencia
+    /**
+     * Inicializa la fila de adyacencia pa un user
+     * 
+     * @param v el indice del user
+     */
     private void initAdjRow(int v) {
         adj[v] = new int[4];
         adjCount[v] = 0;
     }
 
-    // Duplica capacidad de vecinos de v
+    /**
+     * Hace mas grande la lista de vecinos de un user si esta llena
+     * 
+     * @param v el indice del user
+     */
     private void ensureAdjCapacity(int v) {
         if (adj[v] == null) { initAdjRow(v); return; }
         if (adjCount[v] < adj[v].length) return;
@@ -61,7 +89,11 @@ public class DirectedGraph {
         adj[v] = newRow;
     }
 
-    //Agg user si no existe
+    /**
+     * Agrega un nuevo user al grafo si no existe
+     * 
+     * @param name el nombre del user a agregar
+     */
     public void addUser(String name) {
         if (indexOfUser(name) != -1) return;
         ensureUsersCapacity();
@@ -70,7 +102,13 @@ public class DirectedGraph {
         userCount++;
     }
 
-    // agg arista dirigida from to
+    /**
+     * Agrega una relacion de un user a otro
+     * Si ya existe la relacion, no hace nada
+     * 
+     * @param from el user que sigue
+     * @param to el user que es seguido
+     */
     public void addRelation(String from, String to) {
         int iFrom = indexOfUser(from);
         int iTo = indexOfUser(to);
@@ -86,13 +124,27 @@ public class DirectedGraph {
         adjCount[iFrom]++;
     }
 
-    // getters 
-
+    /**
+     * Cuantos users hay en el grafo
+     * 
+     * @return el numero de users
+     */
     public int getVertexCount() { return userCount; }
 
+    /**
+     * Devuelve el nombre de un user por su indice
+     * 
+     * @param index el indice del user
+     * @return el nombre del user
+     */
     public String getUserByIndex(int index) { return users[index]; }
 
-    // Copia de vecinos de v
+    /**
+     * Devuelve los vecinos de un user (a quien sigue)
+     * 
+     * @param v el indice del user
+     * @return array con los indices de los users que sigue
+     */
     public int[] getNeighbors(int v) {
         int n = adjCount[v];
         int[] out = new int[n];
@@ -100,11 +152,29 @@ public class DirectedGraph {
         return out;
     }
 
-
+    /**
+     * Devuelve el array interno de vecinos de un user
+     * Mas eficiente pa recorrer pero puede tener espacios vacios
+     * 
+     * @param v el indice del user
+     * @return el array interno de vecinos
+     */
     public int[] getNeighborsBuffer(int v) { return adj[v]; }
 
+    /**
+     * Cuantos vecinos tiene un user
+     * 
+     * @param v el indice del user
+     * @return cuantos users sigue
+     */
     public int getNeighborsCount(int v) { return adjCount[v]; }
 
+    /**
+     * Convierte el grafo a string pa mostrarlo
+     * Formato: "indice [user] -> [vecinos]"
+     * 
+     * @return string con todo el grafo
+     */
     @Override
     public String toString() {
         String s = "";

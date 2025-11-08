@@ -1,5 +1,9 @@
 package socialmedia.algorithms;
 
+/*
+@author JuanFerreira
+ * @version 1.0
+*/
 import socialmedia.model.DirectedGraph;
 
 public class Kosaraju {

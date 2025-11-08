@@ -1,3 +1,9 @@
+/*
+   @author JuanFerreira 
+   @author AlejandroSimanca
+ * @version 1.0
+*/
+
 package socialmedia.ui;
 
 import socialmedia.model.DirectedGraph;
